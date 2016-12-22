@@ -37,7 +37,6 @@ def detail_view(request):
 @view_config(route_name='create', renderer='../templates/create.jinja2')
 def create_view(request):
     if request.method == "POST":
-        import pdb; pdb.set_trace()
         new_title = request.POST["title"]
         new_body = request.POST["body"]
         new_date = datetime.datetime.now().date()
