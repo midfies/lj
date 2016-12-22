@@ -1,0 +1,24 @@
+{% extends "layout.jinja2"%}
+{% block body %}
+<div class="col-md-10">
+    <form method="POST">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input name="title" type="text" placeholder="Title of Post..." class="form-control" id="title">
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <input name="category" type="text" placeholder="Category of Post..."class="form-control" id="category">
+      </div>
+      <div class="form-group">
+        <label for="tags">Tags</label>
+        <input name="tags" type="text" placeholder="Tags for Post..."class="form-control" id="tags">
+      </div>
+      <div>
+        <label for="body">Body</label>
+        <textarea name="body" rows="20" placeholder="Blog Post Goes Here..." class="form-control input-lg" id="body"></textarea>
+      </div><br>
+      <button type="submit" class="btn btn-default">Post</button>
+    </form>
+</div>
+{% endblock %}

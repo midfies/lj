@@ -3,23 +3,50 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
-from ..models import MyModel
+from ..models import Entry
+import datetime
 
 
-@view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
-def my_view(request):
+# @view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
+# def my_view(request):
+#     try:
+#         query = request.dbsession.query(Entry)
+#         one = query.filter(Entry.title == 'First Entry').first()
+#     except DBAPIError:
+#         return Response(db_err_msg, content_type='text/plain', status=500)
+#     return {'one': one, 'project': 'learning_journal'}
+
+@view_config(route_name='list', renderer='templates/list.jinja2')
+def list_view(request):
+    """List_view view to supply entries before database."""
     try:
-        query = request.dbsession.query(MyModel)
-        one = query.filter(MyModel.name == 'one').first()
+        entries = request.dbsession.query(Entry).all()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'one': one, 'project': 'learning_journal'}
+    return {"entries": entries}
 
 
-@view_config(route_name='create', renderer='../templates/test.jinja2')
+@view_config(route_name="detail", renderer="../templates/detail.jinja2")
+def detail_view(request):
+    """View for individual post."""
+    query = request.dbsession.query(Entry)
+    the_entry = query.filter(Entry.id == request.matchdict['id']).first()
+    # import pdb; pdb.set_trace()
+    return {"entry": the_entry}
+
+@view_config(route_name='create', renderer='../templates/create.jinja2')
 def create_view(request):
-    import pdb; pdb.set_trace()
     if request.method == "POST":
+        import pdb; pdb.set_trace()
+        new_title = request.POST["title"]
+        new_body = request.POST["body"]
+        new_date = datetime.datetime.now().date()
+        new_category = request.POST["category"]
+        new_tags = request.POST["tags"]
+        new_entry = Entry(title=new_title, body=new_body, creation_date=new_date, category=new_category, tags=new_tags)
+        
+        request.dbsession.add(new_entry)
+
         return {}
     return {} 
 

@@ -45,9 +45,9 @@ class TestMyViewSuccessCondition(BaseTest):
         super(TestMyViewSuccessCondition, self).setUp()
         self.init_database()
 
-        from .models import MyModel
+        from .models import Entry
 
-        model = MyModel(name='one', value=55)
+        model = Entry(name='First Entry', title='This is a sample message for db init')
         self.session.add(model)
 
     def test_passing_view(self):
