@@ -34,10 +34,11 @@ def detail_view(request):
     # import pdb; pdb.set_trace()
     return {"entry": the_entry}
 
+
 @view_config(route_name='create', renderer='../templates/create.jinja2')
 def create_view(request):
+    """View for creating a new post."""
     if request.method == "POST":
-        import pdb; pdb.set_trace()
         new_title = request.POST["title"]
         new_body = request.POST["body"]
         new_date = datetime.datetime.now().date()
