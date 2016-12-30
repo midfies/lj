@@ -13,7 +13,7 @@
    
               <div class="row">
                   <div class="col-sm-6 col-md-6">
-                      <span class="glyphicon glyphicon-folder-open"></span> &nbsp;<a href="#">{{entry.category}}</a>
+                      <span class="glyphicon glyphicon-folder-open"></span> &nbsp;<a href="#">{{entry.category | title}}</a>
                       &nbsp;&nbsp;<span class="glyphicon glyphicon-bookmark"></span> 
                       {% set tag_list = entry.tags.split(' ') %}
                       {% for tag in tag_list %}
@@ -26,7 +26,7 @@
               </div><hr>
               <img src="http://placehold.it/900x300" class="img-responsive"><br />
 
-              <p class="lead">{{ entry.body }}</p>
+              <p class="lead">{{ entry.body | truncate(500) }}</p>
               <p class="text-right">
                   <a href="{{ request.route_url('detail', id=entry.id) }}">
                       go to post...
@@ -56,10 +56,9 @@
                 <h4>Recent Posts</h4>
             </div>
             <ul class="list-group">
-                <li class="list-group-item"><a href="#">1. Article 1</a></li>
-                <li class="list-group-item"><a href="#">2. Article 2</a></li>
-                <li class="list-group-item"><a href="#">3. Article 3</a></li>
-                <li class="list-group-item"><a href="#">4. Article 4</a></li>
+            {%for i in range(5) %}
+                <li class="list-group-item"><a href="{{ request.route_url('detail', id=entries[i].id) }}">{{i + 1}}.{{entries[i].title}}</a></li>
+            {%endfor%}
             </ul>
         </section>
 

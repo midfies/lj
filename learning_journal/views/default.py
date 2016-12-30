@@ -1,26 +1,17 @@
 from pyramid.response import Response
 from pyramid.view import view_config
-
+from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 
 from ..models import Entry
 import datetime
 
 
-# @view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
-# def my_view(request):
-#     try:
-#         query = request.dbsession.query(Entry)
-#         one = query.filter(Entry.title == 'First Entry').first()
-#     except DBAPIError:
-#         return Response(db_err_msg, content_type='text/plain', status=500)
-#     return {'one': one, 'project': 'learning_journal'}
-
 @view_config(route_name='list', renderer='templates/list.jinja2')
 def list_view(request):
     """List_view view to supply entries before database."""
     try:
-        entries = request.dbsession.query(Entry).all()
+        entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
     return {"entries": entries}
@@ -31,7 +22,6 @@ def detail_view(request):
     """View for individual post."""
     query = request.dbsession.query(Entry)
     the_entry = query.filter(Entry.id == request.matchdict['id']).first()
-    # import pdb; pdb.set_trace()
     return {"entry": the_entry}
 
 
@@ -48,7 +38,7 @@ def create_view(request):
         
         request.dbsession.add(new_entry)
 
-        return {}
+        return HTTPFound(location='/')
     return {} 
 
 
