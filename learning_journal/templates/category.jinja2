@@ -2,9 +2,8 @@
 {% block body %}
  <div class="row">
     <div class="col-md-8">
-
-        <h1> Most Recent Posts</h1><hr>
         {% if entries %}
+        <h1>All {{ entries[0].category | title }} Posts</h1><hr>
           {%for entry in entries%}
             <article>
 
@@ -13,7 +12,7 @@
    
               <div class="row">
                   <div class="col-sm-6 col-md-6">
-                      <span class="glyphicon glyphicon-folder-open"></span> &nbsp;<a href="{{ request.route_url('category', category=entry.category) }}">{{entry.category}}</a>
+                      <span class="glyphicon glyphicon-folder-open"></span> &nbsp;<a href="#">{{entry.category}}</a>
                       &nbsp;&nbsp;<span class="glyphicon glyphicon-bookmark"></span> 
                       {% set tag_list = entry.tags.split(' ') %}
                       {% for tag in tag_list %}
@@ -24,7 +23,7 @@
                       &nbsp;<span class="glyphicon glyphicon-pencil"></span> <a href="#">Comments</a>
                   </div>
               </div><hr>
-              <img src="http://placehold.it/900x300" class="img-responsive"><br />
+              <img src="http://placehold.it/900x200" class="img-responsive"><br />
 
               <p class="lead">{{ entry.body | truncate(500) }}</p>
               <p class="text-right">
@@ -48,46 +47,6 @@
                 Don't want to miss updates? Please click the below button!
             </p>
             <button class="btn btn-primary btn-lg">Subscribe to my feed</button>
-        </section>
-
-        <!-- Latest Posts -->
-        <section class="panel panel-default">
-            <div class="panel-heading">
-                <h4>Recent Posts</h4>
-            </div>
-            <ul class="list-group">
-            {% if entries %}
-            {%for i in range(5) %}
-                <li class="list-group-item"><a href="{{ request.route_url('detail', id=entries[i].id) }}">{{i + 1}}.{{entries[i].title}}</a></li>
-            {%endfor%}
-            {%endif%}
-            </ul>
-        </section>
-
-        <!-- Categories -->
-        <section class="panel panel-default">
-            <div class="panel-heading">
-                <h4>Categories</h4>
-            </div>
-            <ul class="list-group">
-                <li class="list-group-item"><a href="#">Category 1</a></li>
-                <li class="list-group-item"><a href="#">Category 2</a></li>
-                <li class="list-group-item"><a href="#">Category 3</a></li>
-            </ul>
-        </section>
-
-        <!-- Tags -->
-        <section class="panel panel-default">
-            <div class="panel-heading">
-                <h4>Tags</h4>
-            </div>
-            <div class="panel-body">
-                <ul class="list-inline">
-                    <li><a href="#">Example Tag 1</a></li>
-                    <li><a href="#">Example Tag 2</a></li>
-                    <li><a href="#">Example Tag 3</a></li>
-                </ul>
-            </div>
         </section>
     </section>
 </div>
