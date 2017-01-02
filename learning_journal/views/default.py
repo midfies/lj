@@ -4,7 +4,6 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
-from pyramid.view import notfound_view_config
 
 from ..models import Entry
 import datetime
@@ -41,7 +40,7 @@ def create_view(request):
 
         request.dbsession.add(new_entry)
 
-        return HTTPFound(location='/')
+        return HTTPFound(request.route_url("list"))
     return {}
 
 
