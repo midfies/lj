@@ -182,7 +182,6 @@ def test_create_view_redirects(testapp):
     """Test that a create view redirects."""
     post_params = {'title': 'Test', 'body': 'body', 'category': 'testing', 'tags': ''}
     response = testapp.post('/journal/new-entry', post_params, status=302)
-    import pdb; pdb.set_trace()
     assert response.status == '302 Found'
 
 
