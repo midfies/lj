@@ -17,6 +17,3 @@ class Entry(Base):
     category = Column(Unicode)
     tags = Column(Unicode)
     creation_date = Column(Date)
-
-
-Index('my_index', Entry.title, unique=True, mysql_length=255)
