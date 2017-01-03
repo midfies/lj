@@ -57,7 +57,11 @@
             </div>
             <ul class="list-group">
             {% if entries %}
-            {%for i in range(5) %}
+              {% set count = 5 %}
+              {% if entries | length < 5%}
+                {% set count = entries|length %}
+              {%endif%}
+            {% for i in range(count) %}
                 <li class="list-group-item"><a href="{{ request.route_url('detail', id=entries[i].id) }}">{{i + 1}}.{{entries[i].title}}</a></li>
             {%endfor%}
             {%endif%}

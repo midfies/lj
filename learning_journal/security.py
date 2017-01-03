@@ -39,5 +39,5 @@ def includeme(config):
     config.set_authentication_policy(authn_policy)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authorization_policy(authz_policy)
-    config.set_default_permission('view')
+    # config.set_default_permission('view')
     config.set_root_factory(NewRoot)

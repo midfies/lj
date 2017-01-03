@@ -99,7 +99,7 @@ def add_posts(dummy_request):
 
 
 @pytest.fixture(scope="function")
-def testapp():
+def testapp(request):
     from webtest import TestApp
 
     def main(global_config, **settings):
@@ -121,6 +121,11 @@ def testapp():
     engine = session.bind
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(bind=engine)
+
+    def teardown():
+        session.transaction.rollback()
+
+    request.addfinalizer(teardown)
 
     return testapp
 
