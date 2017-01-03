@@ -22,6 +22,11 @@
               <img src="http://placehold.it/900x300" class="img-responsive"><br />
             
               <p class="lead">{{ entry.body }}</p>
+              <p class="text-right">
+                  <a href="{{ request.route_url('edit', id=entry.id) }}">
+                      edit post...
+                  </a>
+              </p><hr>
             </article>
             
     </div>
