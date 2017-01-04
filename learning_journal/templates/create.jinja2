@@ -2,6 +2,7 @@
 {% block body %}
 <div class="col-md-10">
     <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ request.session.get_csrf_token() }}" />
       <div class="form-group">
         <label for="title">Title</label>
         <input name="title" type="text" placeholder="Title of Post..." class="form-control" id="title">

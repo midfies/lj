@@ -108,6 +108,7 @@ def testapp(request):
         config.include('pyramid_jinja2')
         config.include('learning_journal.models')
         config.include('learning_journal.routes')
+        config.include('learning_journal.security')
         config.scan()
         return config.make_wsgi_app()
 
@@ -140,6 +141,16 @@ def fill_the_db(testapp):
             dbsession.add(post)
     return dbsession
 
+
+@pytest.fixture
+def set_auth_credentials():
+    """Make a username/password combo for testing."""
+    import os
+    from passlib.apps import custom_app_context as pwd_context
+
+    os.environ["AUTH_USERNAME"] = "testme"
+    os.environ["AUTH_PASSWORD"] = pwd_context.hash("foobar")
+
 # Unit Tests
 
 
@@ -169,8 +180,8 @@ def test_layout_root(testapp):
     assert 'Marc Fieser' in html.find("footer").text
 
 
-def test_create_view_contains_a_form(testapp):
-    """Doc."""
+def test_create_view_contains_a_form(set_auth_credentials, testapp):
+    """Test that create view contains a form."""
     response = testapp.get('/journal/new-entry', status=200)
     html = response.html
     assert len(html.find_all("form")) == 1
@@ -183,11 +194,19 @@ def test_about_me_contains_info(testapp):
     assert 'About Me' in html.find('h1').text
 
 
-def test_create_view_redirects(testapp):
+def test_create_view_redirects(set_auth_credentials, testapp):
     """Test that a create view redirects."""
     post_params = {'title': 'Test', 'body': 'body', 'category': 'testing', 'tags': ''}
     response = testapp.post('/journal/new-entry', post_params, status=302)
     assert response.status == '302 Found'
+
+
+def test_create_view_posts_new_form(set_auth_credentials, testapp):
+    """Test that a create view redirects."""
+    post_params = {'title': 'TestPOST', 'body': 'body', 'category': 'testing', 'tags': ''}
+    response = testapp.post('/journal/new-entry', post_params, status=302)
+    follow_response = response.follow()
+    assert 'TestPOST' in follow_response.html.find_all("article")[0].text
 
 
 def test_root_contents(testapp):

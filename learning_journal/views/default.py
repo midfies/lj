@@ -53,14 +53,12 @@ def edit_view(request):
     query = request.dbsession.query(Entry)
     the_entry = query.filter(Entry.id == request.matchdict['id']).first()
     if request.method == "POST":
-        new_title = request.POST["title"]
-        new_body = request.POST["body"]
-        new_date = datetime.datetime.now().date()
-        new_category = request.POST["category"].title().replace(" ", "")
-        new_tags = request.POST["tags"]
-        new_entry = Entry(title=new_title, body=new_body, creation_date=new_date, category=new_category, tags=new_tags)
-
-        request.dbsession.add(new_entry)
+        the_entry.title = request.POST["title"]
+        the_entry.body = request.POST["body"]
+        the_entry.category = request.POST["category"].title().replace(" ", "")
+        the_entry.tags = request.POST["tags"]
+    
+        request.dbsession.flush(the_entry)
 
         return HTTPFound(request.route_url("list"))
     return {"entry": the_entry}
