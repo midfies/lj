@@ -15,10 +15,7 @@ import datetime
 @view_config(route_name='list', renderer='templates/list.jinja2')
 def list_view(request):
     """List_view view to supply entries before database."""
-    try:
-        entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
-    except DBAPIError:
-        return Response(db_err_msg, content_type='text/plain', status=500)
+    entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
     return {"entries": entries}
 
 
@@ -59,8 +56,8 @@ def edit_view(request):
         the_entry.body = request.POST["body"]
         the_entry.category = request.POST["category"].title().replace(" ", "")
         the_entry.tags = request.POST["tags"]
-    
-        request.dbsession.flush(the_entry)
+
+        # request.dbsession.flush(the_entry)
 
         return HTTPFound(request.route_url("list"))
     return {"entry": the_entry}
@@ -80,7 +77,7 @@ def about_view(request):
     return {}
 
 
-@view_config(route_name='login', renderer='../templates/login.jinja2', permission=NO_PERMISSION_REQUIRED)
+@view_config(route_name='login', renderer='../templates/login.jinja2', permission=NO_PERMISSION_REQUIRED, require_csrf=False)
 def login_view(request):
     if request.POST:
         username = request.POST["username"]

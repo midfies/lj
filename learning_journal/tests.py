@@ -110,17 +110,7 @@ def set_auth_credentials():
     os.environ["AUTH_PASSWORD"] = pwd_context.hash("foobar")
 
 
-
-
 # Unit Tests
-
-
-# def test_model_gets_added(db_session):
-#     """Test that adding a model to the DB actually does so."""
-#     assert len(db_session.query(Entry).all()) == 0
-#     model = Entry(title="Testing Models", body='This is just a test', category='testing', creation_date=datetime.datetime(2016, 12, 18, 0, 0), tags='test testing')
-#     db_session.add(model)
-#     assert len(db_session.query(Entry).all()) == 1
 
 
 def test_list_view_is_empty_when_no_models(dummy_request):
@@ -180,9 +170,9 @@ def test_create_new_posts_adds_to_db(dummy_request):
 def test_edit_view_displays_post(dummy_request, add_posts):
     """Test edit view displays post that is passed through url."""
     from learning_journal.views.default import edit_view
-    dummy_request.matchdict['id'] = '11'
+    dummy_request.matchdict['id'] = '12'
     result = edit_view(dummy_request)
-    entry = dummy_request.dbsession.query(Entry).get(11)
+    entry = dummy_request.dbsession.query(Entry).get(12)
     assert result['entry'] == entry
 
 
@@ -193,16 +183,87 @@ def test_edit_old_post_updates_post(dummy_request, add_posts):
     query = dummy_request.dbsession.query(Entry)
 
     dummy_request.method = 'POST'
-    dummy_request.matchdict['id'] = '17'
+    dummy_request.matchdict['id'] = '18'
     dummy_request.POST["title"] = 'test title'
     dummy_request.POST['category'] = 'test category'
     dummy_request.POST['tags'] = 'test tags'
     dummy_request.POST['body'] = 'test body'
-    # import pdb; pdb.set_trace()
     edit_view(dummy_request)
+    this_entry = query.get(18)
+    assert this_entry.title == 'test title'
 
-    this_entry = query.get(17)
-    assert this_entry['title'] == 'test title'
+
+def test_category_view_returns_with_correct_category(dummy_request, add_posts):
+    """Test that category review returns entry with proper categoty."""
+    from learning_journal.views.default import category_view
+    dummy_request.matchdict['category'] = 'testing1'
+    result = category_view(dummy_request)
+    assert result['entries'][0].category == 'testing1'
+
+
+def test_about_view_returns_empty_dict(dummy_request):
+    """Test about view returns empty dict."""
+    from learning_journal.views.default import about_view
+    assert about_view(dummy_request) == {}
+
+
+def test_login_view_returns_empty_dict(dummy_request):
+    """Test login view returns empty dict."""
+    from learning_journal.views.default import login_view
+    assert login_view(dummy_request) == {}
+
+
+def test_check_credentials_passes_with_good_creds(set_auth_credentials):
+    """Test that check credentials works with valid creds."""
+    from learning_journal.security import check_credentials
+    assert check_credentials("testme", "foobar")
+
+
+def test_check_credentials_fails_with_bad_password(set_auth_credentials):
+    """Test that check credential fails on bad password."""
+    from learning_journal.security import check_credentials
+    assert not check_credentials("testme", "bad pass")
+
+
+def test_check_credentials_fails_with_bad_username(set_auth_credentials):
+    """Test that check credential fails on bad username."""
+    from learning_journal.security import check_credentials
+    assert not check_credentials("bad username", "foobar")
+
+
+def test_check_credentials_fails_empty_creds(set_auth_credentials):
+    """Test that check credential fails with no credentials."""
+    from learning_journal.security import check_credentials
+    assert not check_credentials("", "")
+
+
+def test_login_view_good_creds_gets_redirect(dummy_request, set_auth_credentials):
+    """Test that logging in with cred redirects to home."""
+    from learning_journal.views.default import login_view
+    from pyramid.httpexceptions import HTTPFound
+    dummy_request.method = "POST"
+    dummy_request.POST["username"] = "testme"
+    dummy_request.POST["password"] = "foobar"
+    result = login_view(dummy_request)
+    assert isinstance(result, HTTPFound)
+
+
+def test_login_view_with_bad_creds_stays(dummy_request, set_auth_credentials):
+    """Test that loggin in does nothing with bad credentials."""
+    from learning_journal.views.default import login_view
+    dummy_request.method = "POST"
+    dummy_request.POST["username"] = "nameuser"
+    dummy_request.POST["password"] = "wordpass"
+    result = login_view(dummy_request)
+    assert result == {}
+
+
+def test_logout_returns_to_home(dummy_request):
+    """Test that logout returns with httpfound to home."""
+    from learning_journal.views.default import logout_view
+    result = logout_view(dummy_request)
+    assert result.status_code == 302
+
 # Functional Tests
 
 
@@ -257,6 +318,13 @@ def test_layout_root(testapp):
     response = testapp.get('/', status=200)
     html = response.html
     assert 'Marc Fieser' in html.find("footer").text
+    assert len(html.find_all('article')) == 0
+
+
+def test_detail_view_returns_not_found_when_db_empty(testapp):
+    """Test detail view returns not found when no entries."""
+    response = testapp.get('/journal/1', status=404)
+    assert response.status_code == 404
 
 
 def test_non_authenticated_user_cannot_access_create_view(testapp):
@@ -265,62 +333,102 @@ def test_non_authenticated_user_cannot_access_create_view(testapp):
     assert response.status_code == 403
 
 
-# def test_user_can_log_in(set_auth_credentials, testapp):
-#     """Test that a user can log in with correct credentials."""
-#     testapp.post("/login", params={
-#         "username": "testme",
-#         "password": "foobar"
-#     })
-#     assert "auth_tkt" in testapp.cookie
-
-# def test_create_view_contains_a_form(set_auth_credentials, testapp):
-#     """Test that create view contains a form."""
-#     response = testapp.get('/journal/new-entry', status=200)
-#     html = response.html
-#     assert len(html.find_all("form")) == 1
+def test_non_authenticated_user_cannot_access_edit_view(testapp):
+    """Test that accessing edit post is forbidden without auth."""
+    response = testapp.get('/journal/1/edit-entry', status=403)
+    assert response.status_code == 403
 
 
-# def test_about_me_contains_info(testapp):
-#     """Test that the about me page has content."""
-#     response = testapp.get('/about')
-#     html = response.html
-#     assert 'About Me' in html.find('h1').text
+def test_category_view_contains_no_entries_with_empty_db(testapp):
+    """Test that category view has no articles with empty db."""
+    response = testapp.get('/journal/category/testing', status=200)
+    html = response.html
+    assert len(html.find_all('article')) == 0
 
 
-# def test_create_view_redirects(set_auth_credentials, testapp):
-#     """Test that a create view redirects."""
-#     post_params = {'title': 'Test', 'body': 'body', 'category': 'testing', 'tags': ''}
-#     response = testapp.post('/journal/new-entry', post_params, status=302)
-#     assert response.status == '302 Found'
+def test_about_me_page_contains_about_me(testapp):
+    """Test about me page contains about me content."""
+    response = testapp.get('/about', status=200)
+    html = response.html
+    assert 'About Me' in html.find("title").text
 
 
-# def test_create_view_posts_new_form(set_auth_credentials, testapp):
-#     """Test that a create view redirects."""
-#     post_params = {'title': 'TestPOST', 'body': 'body', 'category': 'testing', 'tags': ''}
-#     response = testapp.post('/journal/new-entry', post_params, status=302)
-#     follow_response = response.follow()
-#     assert 'TestPOST' in follow_response.html.find_all("article")[0].text
+def test_login_page_has_login_form(testapp):
+    """Test about me page contains about me content."""
+    response = testapp.get('/login', status=200)
+    html = response.html
+    assert 'Log In' in html.find("title").text
+    assert len(html.find_all('form')) == 1
+
+# ======================Let the data start=====================
 
 
-# def test_root_contents(testapp):
-#     """Test that there are no entries on the page."""
-#     fill_the_db(testapp)
-#     response = testapp.get('/', status=200)
-#     html = response.html
-#     assert len(html.findAll("article")) == 5
+def test_home_view_with_data_lists_all_articles(testapp, fill_the_db):
+    """When there's data in the database, the home page has articles."""
+    response = testapp.get('/', status=200)
+    html = response.html
+    assert len(html.find_all("article")) == 5
 
 
-# def test_detail_view_shows_correct_entry(testapp):
-#     """Test that detail view shows the correct entry."""
-#     fill_the_db(testapp)
-#     response = testapp.get('/journal/2', status=200)
-#     html = response.html
-#     assert 'Testing Models 2' in html.text
+def test_detail_view_has_specific_article(testapp):
+    """Test that a specific article is loaded in detail view."""
+    response = testapp.get("/journal/1")
+    assert len(response.html.find_all("article")) == 1
+    assert "Testing Models 1" in response.text
 
 
-# def test_category_view_display_correct_amount(testapp):
-#     """Test that category view displays all of specific category."""
-#     fill_the_db(testapp)
-#     response = testapp.get('/journal/category/testing1', status=200)
-#     html = response.html
-#     assert len(html.findAll('article')) == 2
+def test_user_can_log_in(set_auth_credentials, testapp):
+    """Test that a user can log in with correct credentials."""
+    testapp.post("/login", params={
+        "username": "testme",
+        "password": "foobar"
+    })
+    assert "auth_tkt" in testapp.cookies
+
+
+def test_create_view_contains_a_form(testapp):
+    """Test that create view contains a form."""
+    response = testapp.get('/journal/new-entry', status=200)
+    html = response.html
+    assert len(html.find_all("form")) == 1
+
+
+def test_create_view_redirects_and_updates_db(testapp):
+    """Test that a create view redirects."""
+    response = testapp.get("/journal/new-entry")
+    csrf_token = response.html.find(
+        "input",
+        {"name": "csrf_token"}).attrs["value"]
+
+    post_params = {'csrf_token': csrf_token, 'title': 'TestPOST', 'body': 'body', 'category': 'testing', 'tags': ''}
+    response = testapp.post('/journal/new-entry', post_params, status=302)
+    assert response.status == '302 Found'
+    follow_response = response.follow()
+    assert 'TestPOST' in follow_response.html.find_all("article")[0].text
+
+
+def test_edit_view_redirects_and_updates_db(testapp):
+    """Test that a edit view redirects."""
+    response = testapp.get("/journal/6/edit-entry")
+    csrf_token = response.html.find(
+        "input",
+        {"name": "csrf_token"}).attrs["value"]
+
+    post_params = {'csrf_token': csrf_token, 'title': 'TestPOST Edit', 'body': 'body', 'category': 'testing', 'tags': ''}
+    response = testapp.post('/journal/6/edit-entry', post_params, status=302)
+    assert response.status == '302 Found'
+    follow_response = response.follow()
+    assert 'TestPOST Edit' in follow_response.html.find_all("article")[0].text
+
+
+def test_category_view_display_correct_amount(testapp):
+    """Test that category view displays all of specific category."""
+    response = testapp.get('/journal/category/testing1', status=200)
+    html = response.html
+    assert len(html.findAll('article')) == 2
+
+
+def test_logout_view_logs_out_user(testapp):
+    """Test that logging out revokes the token."""
+    testapp.get('/logout')
+    assert "auth_tkt" not in testapp.cookies
