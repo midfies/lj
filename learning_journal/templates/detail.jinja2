@@ -1,0 +1,37 @@
+{% extends "layout.jinja2"%}
+{% block body %}
+ <div class="row">
+    <div class="col-md-8">
+        <h1>{{entry.title}}</h1><hr>
+            <article>
+              <span id="time" class="glyphicon glyphicon-time">{{entry.creation_date}}</span><br><br>
+   
+              <div class="row">
+                  <div class="col-sm-6 col-md-6">
+                      <span class="glyphicon glyphicon-folder-open"></span> &nbsp;<a href="{{ request.route_url('category', category=entry.category) }}">{{entry.category}}</a>
+                      &nbsp;&nbsp;<span class="glyphicon glyphicon-bookmark"></span> 
+                      {% set tag_list = entry.tags.split(' ') %}
+                      {% for tag in tag_list %}
+                        <a href="#">{{tag}}</a>
+                      {%endfor%}
+                  </div>
+                   <div class="col-sm-6 col-md-6">
+                      &nbsp;<span class="glyphicon glyphicon-pencil"></span> <a href="#">Comments</a>
+                  </div>
+              </div><hr>
+              <img src="http://placehold.it/900x300" class="img-responsive"><br />
+            
+              <p class="lead">{{ entry.body }}</p>
+              {% if request.authenticated_userid %}
+              <p class="text-right">
+                  <a href="{{ request.route_url('edit', id=entry.id) }}">
+                      edit post...
+                  </a>
+              </p><hr>
+              {% endif %}
+            </article>
+            
+    </div>
+
+</div>
+{% endblock %}
