@@ -1,7 +1,7 @@
 """Default views for learning journal web app."""
 
 from pyramid.response import Response
-from pyramid.view import view_config
+from pyramid.view import view_config, forbidden_view_config
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from pyramid.security import NO_PERMISSION_REQUIRED
@@ -27,6 +27,8 @@ def detail_view(request):
     """View for individual post."""
     query = request.dbsession.query(Entry)
     the_entry = query.filter(Entry.id == request.matchdict['id']).first()
+    if not the_entry:
+        return Response("Not Found", content_type='text/plain', status=404)
     return {"entry": the_entry}
 
 
@@ -96,6 +98,13 @@ def login_view(request):
 def logout_view(request):
     auth_head = forget(request)
     return HTTPFound(request.route_url('list'), headers=auth_head)
+
+
+@forbidden_view_config(renderer="../templates/forbidden.jinja2")
+def not_allowed_view(request):
+    """Some special stuff for the forbidden view."""
+    request.response.status = 403
+    return {}
 
 db_err_msg = """\
 Pyramid is having a problem using your SQL database.  The problem
