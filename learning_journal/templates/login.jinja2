@@ -8,11 +8,11 @@
     <input type="hidden" name="csrf_token" value="{{ request.session.get_csrf_token() }}" />
     <p>
         <label for="username">Username: </label>
-        <input type="text" name="username" />
+        <input type="text" name="username" required/>
     </p>
     <p>
         <label for="password">Password: </label>
-        <input type="password" name="password" />
+        <input type="password" name="password" required/>
     </p>
     <p>
         <input type="submit" name="login" />

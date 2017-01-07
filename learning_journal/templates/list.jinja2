@@ -1,10 +1,37 @@
 {% extends "layout.jinja2"%}
 {% block body %}
  <div class="row">
+    {% if request.authenticated_userid %}
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ request.session.get_csrf_token() }}" />
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input name="title" type="text" placeholder="Title of Post..." class="form-control" id="title" required>
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <input name="category" type="text" placeholder="Category of Post..."class="form-control" id="category" required>
+      </div>
+      <div class="form-group">
+        <label for="tags">Tags</label>
+        <input name="tags" type="text" placeholder="Tags for Post..."class="form-control" id="tags">
+      </div>
+      <div>
+        <label for="body">Body</label>
+        <textarea name="body" rows="10" placeholder="Blog Post Goes Here..." class="form-control input-lg" id="body" required></textarea>
+      </div><br>
+      <button type="submit" class="btn btn-default" id='create'>Post</button>
+    </form>
+    {% endif %}
+    <div class="col-md-8">
+
+    </div>
     <div class="col-md-8">
 
         <h1> Most Recent Posts</h1><hr>
         {% if entries %}
+          {% set entryCount = entries|length %}
+              <div id='count'>{{entryCount}}</div>
           {%for entry in entries%}
             <article>
 
@@ -29,9 +56,16 @@
               <p class="lead">{{ entry.body | truncate(500) }}</p>
               <p class="text-right">
                   <a href="{{ request.route_url('detail', id=entry.id) }}">
-                      go to post...
+                      Go to Post
                   </a>
-              </p><hr>
+                  <span class="glyphicon glyphicon-chevron-right"></span>
+              </p>
+               <p class="text-right">
+                  <a class ='delete' href="#" data = {{entry.id}}>
+                      Delete
+                  </a>
+                  <span class="glyphicon glyphicon-trash"></span>
+              </p><hr><hr>
             </article>
           {%endfor%}
         {%endif%}
@@ -44,8 +78,7 @@
     </div>
     <section class="col-md-4">
         <section class="well text-center">
-            <p class="lead">
-                Don't want to miss updates? Please click the below button!
+            <p class="lead">Dont want to miss updates? Please click the below button!
             </p>
             <button class="btn btn-primary btn-lg">Subscribe to my feed</button>
         </section>
@@ -95,4 +128,9 @@
         </section>
     </section>
 </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type='text/javascript' src="{{ request.static_path('learning_journal:static/delete_post.js')}}"></script>
+    <script type='text/javascript' src="{{ request.static_path('learning_journal:static/create_post.js')}}"></script>
 {% endblock %}
