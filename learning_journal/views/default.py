@@ -17,7 +17,7 @@ import datetime
 def list_view(request):
     """List_view view to supply entries before database."""
     entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
-    count = len(entries)
+    count = request.dbsession.query(Entry).order_by(Entry.id.desc()).first().id
     if request.method == "POST":
         new_title = request.POST["title"]
         new_body = request.POST["body"]
