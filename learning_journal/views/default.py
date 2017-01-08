@@ -3,7 +3,6 @@
 from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.httpexceptions import HTTPFound
-from sqlalchemy.exc import DBAPIError
 from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.security import remember, forget
 from learning_journal.security import check_credentials
@@ -18,6 +17,7 @@ import datetime
 def list_view(request):
     """List_view view to supply entries before database."""
     entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
+    count = len(entries)
     if request.method == "POST":
         new_title = request.POST["title"]
         new_body = request.POST["body"]
@@ -27,7 +27,7 @@ def list_view(request):
         new_entry = Entry(title=new_title, body=new_body, creation_date=new_date, category=new_category, tags=new_tags)
 
         request.dbsession.add(new_entry)
-    return {"entries": entries}
+    return {"entries": entries, "count": count}
 
 
 @view_config(route_name="detail", renderer="../templates/detail.jinja2")

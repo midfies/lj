@@ -30,8 +30,7 @@
 
         <h1> Most Recent Posts</h1><hr>
         {% if entries %}
-          {% set entryCount = entries|length %}
-              <div id='count'>{{entryCount}}</div>
+            <div id='count' data-id='{{count}}'></div>
           {%for entry in entries%}
             <article>
 
