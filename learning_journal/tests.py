@@ -111,8 +111,9 @@ def set_auth_credentials():
 
 
 # Unit Tests
+
 def test_to_json():
-    """Tets the to_json method returns a dict."""
+    """Test the to_json method returns a dict."""
     from learning_journal.models import Entry
     new_entry = Entry(title='new_title', body='new_body', creation_date='new_date', category='new_category', tags='new_tags')
     assert isinstance(new_entry.to_json(), dict)
