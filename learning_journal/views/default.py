@@ -16,8 +16,10 @@ import datetime
 @view_config(route_name='list', renderer='templates/list.jinja2')
 def list_view(request):
     """List_view view to supply entries before database."""
+    count = 0
     entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
-    count = request.dbsession.query(Entry).order_by(Entry.id.desc()).first().id
+    if len(entries) > 0:
+        count = request.dbsession.query(Entry).order_by(Entry.id.desc()).first().id
     if request.method == "POST":
         new_title = request.POST["title"]
         new_body = request.POST["body"]
@@ -94,6 +96,7 @@ def edit_view(request):
 @view_config(route_name='delete', permission='delete')
 def delete_view(request):
     """To delete entries from journal."""
+    # import pdb; pdb.set_trace()
     entry = request.dbsession.query(Entry).get(request.matchdict['id'])
     request.dbsession.delete(entry)
     return HTTPFound(request.route_url('list'))
