@@ -9,6 +9,8 @@ from learning_journal.security import check_credentials
 
 from ..models import Entry
 import datetime
+import requests
+import json
 
 # ==================== Views with only GET ====================
 
@@ -65,7 +67,10 @@ def create_view(request):
     if request.method == "POST":
         new_title = request.POST["title"]
         new_body = request.POST["body"]
-        new_date = datetime.datetime.now().date()
+        if request.POST["created"]:
+            new_date = request.POST["created"]
+        else:
+            new_date = datetime.datetime.now().date()
         new_category = request.POST["category"].title().replace(" ", "")
         new_tags = request.POST["tags"]
         new_entry = Entry(title=new_title, body=new_body, creation_date=new_date, category=new_category, tags=new_tags)
@@ -99,6 +104,30 @@ def delete_view(request):
     # import pdb; pdb.set_trace()
     entry = request.dbsession.query(Entry).get(request.matchdict['id'])
     request.dbsession.delete(entry)
+    return HTTPFound(request.route_url('list'))
+
+
+@view_config(route_name="getfromclass", permission='create')
+def from_class_view(request):
+    """View for addingposts."""
+    db = request.dbsession.query(Entry).all()
+    already_exists = False
+    url = "http://sea-python-401d5.herokuapp.com/api/export?apikey=302689d5-d169-47aa-b2b0-cb40d1b949f4"
+    response = requests.get(url)
+    data = response.text
+    data = json.loads(data)
+    for entry in data:
+        created = entry['created']
+        body = entry['text']
+        title = entry['title']
+        category = 'Learning Journal'
+        entry = Entry(title=title, body=body, creation_date=created, category=category, tags='')
+        for already in db:
+            if already.body == body:
+                already_exists = True
+        # import pdb; pdb.set_trace()
+        if not already_exists:
+            request.dbsession.add(entry)
     return HTTPFound(request.route_url('list'))
 
 

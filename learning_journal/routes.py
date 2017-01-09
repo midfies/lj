@@ -10,4 +10,5 @@ def includeme(config):
     config.add_route('category', '/journal/category/{category:\w+}')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
+    config.add_route('getfromclass', '/401lj')
     
