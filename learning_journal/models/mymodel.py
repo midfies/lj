@@ -17,3 +17,13 @@ class Entry(Base):
     category = Column(Unicode)
     tags = Column(Unicode)
     creation_date = Column(Date)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'body': self.body,
+            'category': self.category,
+            'tags': self.tags,
+            'creation_date': self.creation_date
+        }

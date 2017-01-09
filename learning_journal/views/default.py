@@ -3,7 +3,6 @@
 from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.httpexceptions import HTTPFound
-from sqlalchemy.exc import DBAPIError
 from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.security import remember, forget
 from learning_journal.security import check_credentials
@@ -11,12 +10,26 @@ from learning_journal.security import check_credentials
 from ..models import Entry
 import datetime
 
+# ==================== Views with only GET ====================
+
 
 @view_config(route_name='list', renderer='templates/list.jinja2')
 def list_view(request):
     """List_view view to supply entries before database."""
+    count = 0
     entries = request.dbsession.query(Entry).order_by(Entry.creation_date.desc()).all()
-    return {"entries": entries}
+    if len(entries) > 0:
+        count = request.dbsession.query(Entry).order_by(Entry.id.desc()).first().id
+    if request.method == "POST":
+        new_title = request.POST["title"]
+        new_body = request.POST["body"]
+        new_date = datetime.datetime.now().date()
+        new_category = request.POST["category"].title().replace(" ", "")
+        new_tags = request.POST["tags"]
+        new_entry = Entry(title=new_title, body=new_body, creation_date=new_date, category=new_category, tags=new_tags)
+
+        request.dbsession.add(new_entry)
+    return {"entries": entries, "count": count}
 
 
 @view_config(route_name="detail", renderer="../templates/detail.jinja2")
@@ -27,6 +40,23 @@ def detail_view(request):
     if not the_entry:
         return Response("Not Found", content_type='text/plain', status=404)
     return {"entry": the_entry}
+
+
+@view_config(route_name="category", renderer="../templates/category.jinja2")
+def category_view(request):
+    """View for post of different categories."""
+    query = request.dbsession.query(Entry)
+    entries = query.filter(Entry.category == request.matchdict['category']).order_by(Entry.creation_date.desc()).all()
+    return {"entries": entries}
+
+
+@view_config(route_name="about", renderer="../templates/about.jinja2")
+def about_view(request):
+    """View for about me."""
+    return {}
+
+
+# ========================= Views that update DB =================
 
 
 @view_config(route_name='create', renderer='../templates/create.jinja2', permission='create')
@@ -63,18 +93,16 @@ def edit_view(request):
     return {"entry": the_entry}
 
 
-@view_config(route_name="category", renderer="../templates/category.jinja2")
-def category_view(request):
-    """View for post of different categories."""
-    query = request.dbsession.query(Entry)
-    entries = query.filter(Entry.category == request.matchdict['category']).order_by(Entry.creation_date.desc()).all()
-    return {"entries": entries}
+@view_config(route_name='delete', permission='delete')
+def delete_view(request):
+    """To delete entries from journal."""
+    # import pdb; pdb.set_trace()
+    entry = request.dbsession.query(Entry).get(request.matchdict['id'])
+    request.dbsession.delete(entry)
+    return HTTPFound(request.route_url('list'))
 
 
-@view_config(route_name="about", renderer="../templates/about.jinja2")
-def about_view(request):
-    """View for about me."""
-    return {}
+# =================== Views for login/logout ==================
 
 
 @view_config(route_name='login', renderer='../templates/login.jinja2', permission=NO_PERMISSION_REQUIRED, require_csrf=False)
@@ -95,6 +123,8 @@ def login_view(request):
 def logout_view(request):
     auth_head = forget(request)
     return HTTPFound(request.route_url('list'), headers=auth_head)
+
+# ====================== HTTP Pages =======================
 
 
 @forbidden_view_config(renderer="../templates/forbidden.jinja2")

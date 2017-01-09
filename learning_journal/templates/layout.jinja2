@@ -34,7 +34,7 @@
     <!-- Jquery and Bootstrap Script files -->
     <script src="{{ request.static_path('learning_journal:static/vendor/jquery-2.1.4.js') }}"></script>
     <script src="{{ request.static_path('learning_journal:static/vendor/bootstrap-3.3.7-dist/js/bootstrap.min.js') }}"></script>
-    <script src="{{ request.static_path('learning_journal:static/app.js')}}"></script>
+    {% block javascript %}{% endblock %}
 </body>
 </html>
 

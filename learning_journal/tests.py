@@ -111,6 +111,11 @@ def set_auth_credentials():
 
 
 # Unit Tests
+def test_to_json():
+    """Tets the to_json method returns a dict."""
+    from learning_journal.models import Entry
+    new_entry = Entry(title='new_title', body='new_body', creation_date='new_date', category='new_category', tags='new_tags')
+    assert isinstance(new_entry.to_json(), dict)
 
 
 def test_list_view_is_empty_when_no_models(dummy_request):
@@ -263,6 +268,16 @@ def test_logout_returns_to_home(dummy_request):
     from learning_journal.views.default import logout_view
     result = logout_view(dummy_request)
     assert result.status_code == 302
+
+
+def test_delete_view_redirects(dummy_request, add_posts):
+    """Test that delete view redirets back to the home page."""
+    from learning_journal.views.default import delete_view
+    dummy_request.matchdict['id'] = '27'
+    result = delete_view(dummy_request)
+    assert result.status_code == 302
+
+
 
 # Functional Tests
 
@@ -426,6 +441,19 @@ def test_category_view_display_correct_amount(testapp):
     response = testapp.get('/journal/category/testing1', status=200)
     html = response.html
     assert len(html.findAll('article')) == 2
+
+
+def test_posting_from_home_adds_to_db(testapp):
+    """Test that you can post from the home page."""
+    response = testapp.get('/')
+    assert len(response.html.find_all("article")) == 6
+    csrf_token = response.html.find(
+        "input",
+        {"name": "csrf_token"}).attrs["value"]
+    post_params = {'csrf_token': csrf_token, 'title': 'TestHomePost', 'body': 'body', 'category': 'testing', 'tags': ''}
+    response = testapp.post('/', post_params)
+    response = testapp.get('/')
+    assert 'TestHomePost' in response.html.text
 
 
 def test_logout_view_logs_out_user(testapp):

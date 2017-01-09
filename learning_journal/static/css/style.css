@@ -28,3 +28,7 @@ a{
     border: 1px solid #1C8B85;
     padding: 2px;
 }
+
+#count{
+    display: hidden;
+}

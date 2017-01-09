@@ -18,6 +18,7 @@ class NewRoot(object):
         (Allow, Everyone, 'view'),
         (Allow, Authenticated, 'create'),
         (Allow, Authenticated, 'edit'),
+        (Allow, Authenticated, 'delete'),
     ]
 
 
